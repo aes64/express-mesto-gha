@@ -11,16 +11,18 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
-      res.send({ user });
+      if (user) {
+        res.send({ user });
+      } else {
+        return res.status(errors.NOT_FOUND).send({
+          message: 'Пользователь не найден',
+        });
+      }
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
         return res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
-        });
-      } if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.NOT_FOUND).send({
-          message: 'Пользователь не найден',
         });
       }
       return res.status(errors.INTERNAL_SERVER_ERROR).send({
