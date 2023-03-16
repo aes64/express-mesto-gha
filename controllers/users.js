@@ -16,6 +16,10 @@ module.exports.getUserById = (req, res) => {
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
         return res.status(errors.BAD_REQUEST).send({
+          message: 'Некорректный запрос',
+        });
+      } if (error instanceof mongoose.Error.ValidationError) {
+        return res.status(errors.NOT_FOUND).send({
           message: 'Пользователь не найден',
         });
       }
