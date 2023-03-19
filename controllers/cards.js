@@ -55,6 +55,10 @@ module.exports.likeCard = (req, res) => {
         res.status(errors.NOT_FOUND).send({
           message: 'Карточка не найдена',
         });
+      } if (error instanceof mongoose.Error.CastError) {
+        res.status(errors.NOT_FOUND).send({
+          message: 'Нет карточки с таким ID',
+        });
       } else {
         res.status(errors.INTERNAL_SERVER_ERROR).send({
           message: 'Произошла ошибка сервера',
@@ -72,16 +76,21 @@ module.exports.dislikeCard = (req, res) => {
     .then((card) => res.send({ card }))
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.BAD_REQUEST).send({
+        res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
       } if (error instanceof mongoose.Error.DocumentNotFoundError) {
-        return res.status(errors.NOT_FOUND).send({
+        res.status(errors.NOT_FOUND).send({
           message: 'Карточка не найдена',
         });
+      } if (error instanceof mongoose.Error.CastError) {
+        res.status(errors.NOT_FOUND).send({
+          message: 'Нет карточки с таким ID',
+        });
+      } else {
+        res.status(errors.INTERNAL_SERVER_ERROR).send({
+          message: 'Произошла ошибка сервера',
+        });
       }
-      return res.status(errors.INTERNAL_SERVER_ERROR).send({
-        message: 'Произошла ошибка сервера',
-      });
     });
 };
