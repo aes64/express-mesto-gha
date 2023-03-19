@@ -52,21 +52,29 @@ module.exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
-    .then((user) => res.send({ user }))
-    .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
-      } if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.NOT_FOUND).send({
-          message: 'Пользователь не найден',
+    .then((user) => {
+      res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        res.status(errors.NOT_FOUND).send({
+          message: 'Некорректный ID пользователя',
         });
       }
-      return res.status(errors.INTERNAL_SERVER_ERROR).send({
-        message: 'Произошла ошибка сервера',
-      });
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(errors.BAD_REQUEST).send({
+          message: 'Переданы некорректные данные',
+        });
+      } else {
+        res.status(errors.INTERNAL_SERVER_ERROR).send({
+          message: 'Произошла ошибка сервера',
+        });
+      }
     });
 };
 
@@ -75,20 +83,25 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => res.send({ user }))
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.BAD_REQUEST).send({
+        res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
-      } if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.NOT_FOUND).send({
+      } if (error instanceof mongoose.Error.DocumentNotFoundError) {
+        res.status(errors.NOT_FOUND).send({
           message: 'Пользователь не найден',
         });
+      } else {
+        res.status(errors.INTERNAL_SERVER_ERROR).send({
+          message: 'Произошла ошибка сервера',
+        });
       }
-      return res.status(errors.INTERNAL_SERVER_ERROR).send({
-        message: 'Произошла ошибка сервера',
-      });
     });
 };
