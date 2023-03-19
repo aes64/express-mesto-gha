@@ -28,7 +28,7 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then(() => res.send({ message: 'Карточка удалена' }))
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
+      if (error instanceof mongoose.Error.DocumentNotFoundError) {
         return res.status(errors.NOT_FOUND).send({
           message: 'Карточка не найдена',
         });
@@ -51,7 +51,7 @@ module.exports.likeCard = (req, res) => {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
-      } if (error instanceof mongoose.Error.ValidationError) {
+      } if (error instanceof mongoose.Error.DocumentNotFoundError) {
         res.status(errors.NOT_FOUND).send({
           message: 'Карточка не найдена',
         });
@@ -75,7 +75,7 @@ module.exports.dislikeCard = (req, res) => {
         return res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
-      } if (error instanceof mongoose.Error.ValidationError) {
+      } if (error instanceof mongoose.Error.DocumentNotFoundError) {
         return res.status(errors.NOT_FOUND).send({
           message: 'Карточка не найдена',
         });
