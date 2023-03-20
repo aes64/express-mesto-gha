@@ -30,7 +30,7 @@ module.exports.deleteCard = (req, res) => {
       if (card) {
         res.send({ message: 'Карточка удалена' });
       } else {
-        res.status(errors.BAD_REQUEST).send({
+        res.status(errors.NOT_FOUND).send({
           message: 'Некорректный ID',
         });
       }
@@ -41,7 +41,7 @@ module.exports.deleteCard = (req, res) => {
           message: 'Карточка не найдена',
         });
       } if (error instanceof mongoose.Error.CastError) {
-        res.status(errors.NOT_FOUND).send({
+        res.status(errors.BAD_REQUEST).send({
           message: 'Нет карточки с таким ID',
         });
       } else {
