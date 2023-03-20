@@ -36,11 +36,7 @@ module.exports.deleteCard = (req, res) => {
       }
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.DocumentNotFoundError) {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Карточка не найдена',
-        });
-      } if (error instanceof mongoose.Error.CastError) {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Нет карточки с таким ID',
         });
@@ -68,11 +64,7 @@ module.exports.likeCard = (req, res) => {
       }
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
-      } if (error instanceof mongoose.Error.CastError) {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный ID',
         });
@@ -100,11 +92,7 @@ module.exports.dislikeCard = (req, res) => {
       }
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
-      } if (error instanceof mongoose.Error.CastError) {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный ID',
         });

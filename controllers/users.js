@@ -20,11 +20,7 @@ module.exports.getUserById = (req, res) => {
       }
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
-      } if (error instanceof mongoose.Error.CastError) {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
@@ -66,11 +62,6 @@ module.exports.updateUser = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Некорректный ID пользователя',
-        });
-      }
       if (err instanceof mongoose.Error.ValidationError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Переданы некорректные данные',
@@ -98,10 +89,6 @@ module.exports.updateAvatar = (req, res) => {
       if (error instanceof mongoose.Error.ValidationError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
-        });
-      } if (error instanceof mongoose.Error.DocumentNotFoundError) {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Пользователь не найден',
         });
       } else {
         res.status(errors.INTERNAL_SERVER_ERROR).send({
