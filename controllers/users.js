@@ -24,6 +24,10 @@ module.exports.getUserById = (req, res) => {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
+      } if (error instanceof mongoose.Error.CastError) {
+        res.status(errors.BAD_REQUEST).send({
+          message: 'Некорректный запрос',
+        });
       } else {
         res.status(errors.INTERNAL_SERVER_ERROR).send({
           message: 'Произошла ошибка сервера',
