@@ -77,19 +77,23 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .then((card) => res.send({ card }))
+    .then((card) => {
+      if (card) {
+        res.send({ card });
+      } else {
+        res.status(errors.NOT_FOUND).send({
+          message: 'Нет карточки с таким ID',
+        });
+      }
+    })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
         res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
-      } if (error instanceof mongoose.Error.DocumentNotFoundError) {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Карточка не найдена',
-        });
       } if (error instanceof mongoose.Error.CastError) {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Нет карточки с таким ID',
+        res.status(errors.BAD_REQUEST).send({
+          message: 'Карточка не найдена',
         });
       } else {
         res.status(errors.INTERNAL_SERVER_ERROR).send({

@@ -21,13 +21,14 @@ module.exports.getUserById = (req, res) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.BAD_REQUEST).send({
+        res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
+      } else {
+        res.status(errors.INTERNAL_SERVER_ERROR).send({
+          message: 'Произошла ошибка сервера',
+        });
       }
-      return res.status(errors.INTERNAL_SERVER_ERROR).send({
-        message: 'Произошла ошибка сервера',
-      });
     });
 };
 
