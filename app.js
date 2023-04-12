@@ -1,10 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const mongoose = require('mongoose');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const errors = require('./utils/constants');
+const errorName = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -17,7 +17,7 @@ app.post('/signin', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).pattern(errors.REGEXPHTTP),
+    avatar: Joi.string().min(2).pattern(errorName.REGEXPHTTP),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
@@ -26,7 +26,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).pattern(errors.REGEXPHTTP),
+    avatar: Joi.string().min(2).pattern(errorName.REGEXPHTTP),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }).unknown(true),
@@ -34,6 +34,8 @@ app.post('/signup', celebrate({
 app.use(auth);
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
+
+app.use(errors());
 app.use('/', require('./routes/notFound'));
 
 app.listen(PORT, () => {
