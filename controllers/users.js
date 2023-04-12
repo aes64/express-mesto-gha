@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const errors = require('../utils/constants');
 
@@ -32,9 +34,44 @@ module.exports.getUserById = (req, res) => {
     });
 };
 
-module.exports.createNewUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+module.exports.getMe = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      } else {
+        res.status(401).send('Пользователь не найден');
+      }
+    })
+    .catch(next);
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  User.findByCredentials({ email, password })
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'super-strong-secret',
+        { expiresIn: '7d' },
+      );
+      return res.send(token);
+    })
+    .catch(() => {
+      res
+        .status(401)
+        .send({ message: 'Неправильные логин или пароль' });
+    });
+};
+
+module.exports.createUser = (req, res) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.send({ user }))
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {

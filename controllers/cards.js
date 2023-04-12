@@ -47,6 +47,26 @@ module.exports.deleteCard = (req, res) => {
       }
     });
 };
+module.exports.deleteCard = async (req, res, next) => {
+  try {
+    const cardId = await Card.findOne({ _id: req.params.cardId });
+    const cardOwner = req.user._id;
+    if (cardId === null) {
+      next(new Error(errors.NOT_FOUND));
+    } else if (cardId.owner.valueOf() === cardOwner) {
+      const card = await Card.findByIdAndRemove(req.params.cardId);
+      res.send({ data: card });
+    } else {
+      next(new Error(errors.ACCESS_DENIED));
+    }
+  } catch (err) {
+    if (err instanceof mongoose.Error.CastError) {
+      next(new Error(errors.BAD_REQUEST));
+    } else {
+      next(err);
+    }
+  }
+};
 
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
