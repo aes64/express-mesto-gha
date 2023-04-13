@@ -48,7 +48,7 @@ module.exports.getMe = (req, res, next) => {
 
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
-  User.findByCredentials({ email, password })
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
@@ -72,9 +72,18 @@ module.exports.createUser = (req, res) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.send({ user }))
+    .then((user) => res.status(201)
+      .send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+        _id: user._id,
+      }))
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
+      if (error.code === 11000) {
+        res.status(errors.ALREADY_EXSIST).send({ message: 'Почта уже используется' });
+      } else if (error instanceof mongoose.Error.ValidationError) {
         return res.status(errors.BAD_REQUEST).send({
           message: 'Некорректный запрос',
         });
