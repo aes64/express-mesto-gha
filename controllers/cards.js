@@ -24,44 +24,21 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => {
-      if (card) {
-        res.send({ message: 'Карточка удалена' });
-      } else {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Некорректный ID',
-        });
-      }
-    })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Нет карточки с таким ID',
-        });
-      } else {
-        res.status(errors.INTERNAL_SERVER_ERROR).send({
-          message: 'Произошла ошибка сервера',
-        });
-      }
-    });
-};
 module.exports.deleteCard = async (req, res, next) => {
   try {
     const cardId = await Card.findOne({ _id: req.params.cardId });
     const cardOwner = req.user._id;
     if (cardId === null) {
-      next(new Error(errors.NOT_FOUND));
+      res.status(404).send({ message: 'Карточка не найдена' });
     } else if (cardId.owner.valueOf() === cardOwner) {
       const card = await Card.findByIdAndRemove(req.params.cardId);
-      res.send({ data: card });
+      res.send(card);
     } else {
-      next(new Error(errors.ACCESS_DENIED));
+      res.status(403).send({ message: 'Нет прав' });
     }
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
-      next(new Error(errors.BAD_REQUEST));
+      res.status(400).send({ message: 'Некорректный запрос' });
     } else {
       next(err);
     }
