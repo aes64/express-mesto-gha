@@ -2,46 +2,42 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../utils/error/NotFoundError');
+const BadRequestError = require('../utils/error/BadRequestError');
+const AlreadyExistError = require('../utils/error/AlreadyExistError');
 const errors = require('../utils/constants');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ users }))
-    .catch(() => res.status(errors.INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка сервера' }));
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (user) {
-        res.send({ user });
+        res.send(user);
       } else {
-        res.status(errors.NOT_FOUND).send({
-          message: 'Пользователь не найден',
-        });
+        throw new NotFoundError(errors.NOT_FOUND);
       }
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
+        next(new NotFoundError(errors.NOT_FOUND));
       } else {
-        res.status(errors.INTERNAL_SERVER_ERROR).send({
-          message: 'Произошла ошибка сервера',
-        });
+        next(error);
       }
     });
 };
 
 module.exports.getMe = (req, res, next) => {
-  console.log(req);
   User.findById(req.user._id)
     .then((user) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(401).send('Пользователь не найден');
+        throw new NotFoundError(errors.NOT_FOUND);
       }
     })
     .catch(next);
@@ -56,12 +52,12 @@ module.exports.login = (req, res, next) => {
         'super-strong-secret',
         { expiresIn: '7d' },
       );
-      return res.send(token);
+      res.send(token);
     })
     .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -79,19 +75,16 @@ module.exports.createUser = (req, res) => {
       }))
     .catch((error) => {
       if (error.code === 11000) {
-        res.status(errors.ALREADY_EXSIST).send({ message: 'Почта уже используется' });
+        next(new AlreadyExistError(errors.ALREADY_EXIST));
       } else if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
+        next(new BadRequestError(errors.BAD_REQUEST));
+      } else {
+        next(error);
       }
-      return res.status(errors.INTERNAL_SERVER_ERROR).send({
-        message: 'Произошла ошибка сервера',
-      });
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -106,18 +99,14 @@ module.exports.updateUser = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Переданы некорректные данные',
-        });
+        next(new BadRequestError(errors.BAD_REQUEST));
       } else {
-        res.status(errors.INTERNAL_SERVER_ERROR).send({
-          message: 'Произошла ошибка сервера',
-        });
+        next(err);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -127,16 +116,18 @@ module.exports.updateAvatar = (req, res) => {
       runValidators: true,
     },
   )
-    .then((user) => res.send({ user }))
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      } else {
+        next(new NotFoundError(errors.NOT_FOUND));
+      }
+    })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(errors.BAD_REQUEST).send({
-          message: 'Некорректный запрос',
-        });
+        next(new BadRequestError(errors.BAD_REQUEST));
       } else {
-        res.status(errors.INTERNAL_SERVER_ERROR).send({
-          message: 'Произошла ошибка сервера',
-        });
+        next(error);
       }
     });
 };
