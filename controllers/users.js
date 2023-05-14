@@ -46,7 +46,7 @@ module.exports.getMe = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -57,11 +57,7 @@ module.exports.login = (req, res) => {
       );
       return res.send(token);
     })
-    .catch(() => {
-      res
-        .status(401)
-        .send({ message: 'Неправильные логин или пароль' });
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res) => {
