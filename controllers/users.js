@@ -35,10 +35,11 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.getMe = (req, res, next) => {
+  console.log(req);
   User.findById(req.user._id)
     .then((user) => {
       if (user) {
-        res.send({ data: user });
+        res.send(user);
       } else {
         res.status(401).send('Пользователь не найден');
       }
