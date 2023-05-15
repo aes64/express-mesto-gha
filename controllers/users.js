@@ -6,6 +6,7 @@ const errors = require('../utils/constants');
 const NotFoundError = require('../utils/error/NotFoundError');
 const BadRequestError = require('../utils/error/BadRequestError');
 const AlreadyExistError = require('../utils/error/AlreadyExistError');
+const UnauthorizedError = require('../utils/error/UnauthorizedError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -18,7 +19,8 @@ module.exports.getUserById = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send(user);
-      } const error = NotFoundError(errors.NOT_FOUND);
+      }
+      const error = NotFoundError(errors.NOT_FOUND);
       return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
@@ -45,12 +47,16 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        'super-strong-secret',
-        { expiresIn: '7d' },
-      );
-      res.send({ email, password, token });
+      if (user) {
+        const token = jwt.sign(
+          { _id: user._id },
+          'super-strong-secret',
+          { expiresIn: '7d' },
+        );
+        res.send({ email, password, token });
+      }
+      const error = new UnauthorizedError(errors.UNAUTHORIZED);
+      return res.status(error.statusCode).send({ message: error.message });
     })
     .catch(next);
 };
