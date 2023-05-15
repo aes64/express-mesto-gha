@@ -52,7 +52,7 @@ module.exports.login = (req, res, next) => {
         'super-strong-secret',
         { expiresIn: '7d' },
       );
-      res.send(token);
+      res.send({ email, password, token });
     })
     .catch(next);
 };
@@ -73,14 +73,16 @@ module.exports.createUser = (req, res, next) => {
         email: user.email,
         _id: user._id,
       }))
-    .catch((error) => {
-      if (error.code === 11000) {
-        next(new AlreadyExistError(errors.ALREADY_EXIST));
-      } else if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError(errors.BAD_REQUEST));
-      } else {
-        next(error);
+    .catch((err) => {
+      if (err.code === 11000) {
+        const error = new AlreadyExistError(errors.ALREADY_EXIST);
+        return res.status(error.statusCode).send({ message: error.message });
       }
+      if (err instanceof mongoose.Error.ValidationError) {
+        const error = new BadRequestError(errors.BAD_REQUEST);
+        return res.status(error.statusCode).send({ message: error.message });
+      }
+      return next(err);
     });
 };
 
