@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const errors = require('../utils/constants');
 const NotFoundError = require('../utils/error/NotFoundError');
 const BadRequestError = require('../utils/error/BadRequestError');
 const AlreadyExistError = require('../utils/error/AlreadyExistError');
-const errors = require('../utils/constants');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
