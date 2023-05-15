@@ -4,15 +4,16 @@ const errors = require('../utils/constants');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
-  if (!authorization || !authorization.startsWith('Bearer ')) {
-    return next(new UnauthorizedError(errors.UNAUTHORIZED));
-  }
-  const token = authorization.replace('Bearer ', '');
   let payload;
   try {
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      throw new UnauthorizedError(errors.UNAUTHORIZED);
+    }
+    const token = authorization.replace('Bearer ', '');
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {
-    return next(new UnauthorizedError(errors.UNAUTHORIZED));
+    const error = new UnauthorizedError(errors.UNAUTHORIZED);
+    return res.status(error.statusCode).send({ message: error.message });
   }
   req.user = payload;
   next();
