@@ -18,9 +18,8 @@ module.exports.getUserById = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send(user);
-      } else {
-        throw new NotFoundError(errors.NOT_FOUND);
-      }
+      } const error = NotFoundError(errors.NOT_FOUND);
+      return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
@@ -36,9 +35,8 @@ module.exports.getMe = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send(user);
-      } else {
-        throw new NotFoundError(errors.NOT_FOUND);
-      }
+      } const error = NotFoundError(errors.NOT_FOUND);
+      return res.status(error.statusCode).send({ message: error.message });
     })
     .catch(next);
 };
@@ -121,9 +119,9 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send({ data: user });
-      } else {
-        next(new NotFoundError(errors.NOT_FOUND));
       }
+      const error = NotFoundError(errors.NOT_FOUND);
+      return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
