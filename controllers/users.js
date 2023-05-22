@@ -17,18 +17,17 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
-      if (user) {
-        res.send(user);
+      if (!user) {
+        const err = new NotFoundError(errors.NOT_FOUND);
+        return res.status(err.statusCode).send({ message: err.message });
       }
-      const error = NotFoundError(errors.NOT_FOUND);
-      return res.status(error.statusCode).send({ message: error.message });
+      return res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        next(new NotFoundError(errors.NOT_FOUND));
-      } else {
-        next(error);
-      }
+        const err = new NotFoundError(errors.NOT_FOUND);
+        return res.status(err.statusCode).send({ message: err.message });
+      } return next(error);
     });
 };
 
@@ -37,7 +36,7 @@ module.exports.getMe = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send(user);
-      } const error = NotFoundError(errors.NOT_FOUND);
+      } const error = new NotFoundError(errors.NOT_FOUND);
       return res.status(error.statusCode).send({ message: error.message });
     })
     .catch(next);
@@ -126,7 +125,7 @@ module.exports.updateAvatar = (req, res, next) => {
       if (user) {
         res.send({ data: user });
       }
-      const error = NotFoundError(errors.NOT_FOUND);
+      const error = new NotFoundError(errors.NOT_FOUND);
       return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {

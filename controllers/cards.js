@@ -57,7 +57,7 @@ module.exports.likeCard = (req, res, next) => {
       if (card) {
         res.send(card);
       }
-      const error = NotFoundError(errors.NOT_FOUND);
+      const error = new NotFoundError(errors.NOT_FOUND);
       return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
@@ -79,7 +79,7 @@ module.exports.dislikeCard = (req, res, next) => {
       if (card) {
         res.send(card);
       }
-      const error = NotFoundError(errors.NOT_FOUND);
+      const error = new NotFoundError(errors.NOT_FOUND);
       return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
