@@ -42,7 +42,7 @@ module.exports.getMe = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.login = (req, res, next) => {
+module.exports.login = (req, res) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
@@ -52,12 +52,16 @@ module.exports.login = (req, res, next) => {
           'super-strong-secret',
           { expiresIn: '7d' },
         );
-        res.send({ email, password, token });
+        return res.send({ email, password, token });
       }
       const error = new UnauthorizedError(errors.UNAUTHORIZED);
       return res.status(error.statusCode).send({ message: error.message });
     })
-    .catch(next);
+    .catch((error) => {
+      console.log(error);
+      const err = new UnauthorizedError(errors.UNAUTHORIZED);
+      return res.status(err.statusCode).send({ message: err.message });
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
