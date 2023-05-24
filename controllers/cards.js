@@ -29,19 +29,16 @@ module.exports.deleteCard = async (req, res, next) => {
     const cardId = await Card.findOne({ _id: req.params.cardId });
     const cardOwner = req.user._id;
     if (cardId === null) {
-      const error = new NotFoundError(errors.NOT_FOUND);
-      return res.status(error.statusCode).send({ message: error.message });
+      next(new NotFoundError(errors.NOT_FOUND));
     } if (cardId.owner.valueOf() === cardOwner) {
       const card = await Card.findByIdAndRemove(req.params.cardId);
       res.send(card);
     } else {
-      const error = new AccessError(errors.ACCESS_DENIED);
-      return res.status(error.statusCode).send({ message: error.message });
+      next(new AccessError(errors.ACCESS_DENIED));
     }
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
-      const error = BadRequestError(errors.BAD_REQUEST);
-      return res.status(error.statusCode).send({ message: error.message });
+      next(new BadRequestError(errors.BAD_REQUEST));
     } return next(err);
   }
 };
