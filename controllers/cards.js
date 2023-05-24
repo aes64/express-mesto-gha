@@ -39,7 +39,9 @@ module.exports.deleteCard = async (req, res, next) => {
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
       next(new BadRequestError(errors.BAD_REQUEST));
-    } return next(err);
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -74,9 +76,9 @@ module.exports.dislikeCard = (req, res, next) => {
     .then((card) => {
       if (card) {
         res.send(card);
+      } else {
+        next(new NotFoundError(errors.NOT_FOUND));
       }
-      const error = new NotFoundError(errors.NOT_FOUND);
-      return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {

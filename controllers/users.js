@@ -6,7 +6,6 @@ const errors = require('../utils/constants');
 const NotFoundError = require('../utils/error/NotFoundError');
 const BadRequestError = require('../utils/error/BadRequestError');
 const AlreadyExistError = require('../utils/error/AlreadyExistError');
-const UnauthorizedError = require('../utils/error/UnauthorizedError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -18,15 +17,13 @@ module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        const err = new NotFoundError(errors.NOT_FOUND);
-        return res.status(err.statusCode).send({ message: err.message });
+        next(new NotFoundError(errors.NOT_FOUND));
       }
       return res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
-        const err = new NotFoundError(errors.NOT_FOUND);
-        return res.status(err.statusCode).send({ message: err.message });
+        next(new NotFoundError(errors.NOT_FOUND));
       } return next(error);
     });
 };
@@ -36,32 +33,25 @@ module.exports.getMe = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send(user);
-      } const error = new NotFoundError(errors.NOT_FOUND);
-      return res.status(error.statusCode).send({ message: error.message });
+      } else {
+        next(new NotFoundError(errors.NOT_FOUND));
+      }
     })
     .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
-      if (user) {
-        const token = jwt.sign(
-          { _id: user._id },
-          'super-strong-secret',
-          { expiresIn: '7d' },
-        );
-        return res.send({ email, password, token });
-      }
-      const error = new UnauthorizedError(errors.UNAUTHORIZED);
-      return res.status(error.statusCode).send({ message: error.message });
+      const token = jwt.sign(
+        { _id: user._id },
+        'super-strong-secret',
+        { expiresIn: '7d' },
+      );
+      return res.send({ email, password, token });
     })
-    .catch((error) => {
-      console.log(error);
-      const err = new UnauthorizedError(errors.UNAUTHORIZED);
-      return res.status(err.statusCode).send({ message: err.message });
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -82,12 +72,10 @@ module.exports.createUser = (req, res, next) => {
       }))
     .catch((err) => {
       if (err.code === 11000) {
-        const error = new AlreadyExistError(errors.ALREADY_EXIST);
-        return res.status(error.statusCode).send({ message: error.message });
+        next(new AlreadyExistError(errors.ALREADY_EXIST));
       }
       if (err instanceof mongoose.Error.ValidationError) {
-        const error = new BadRequestError(errors.BAD_REQUEST);
-        return res.status(error.statusCode).send({ message: error.message });
+        next(new BadRequestError(errors.BAD_REQUEST));
       }
       return next(err);
     });
@@ -128,9 +116,9 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => {
       if (user) {
         res.send({ data: user });
+      } else {
+        next(new NotFoundError(errors.NOT_FOUND));
       }
-      const error = new NotFoundError(errors.NOT_FOUND);
-      return res.status(error.statusCode).send({ message: error.message });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {

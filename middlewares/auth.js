@@ -12,8 +12,7 @@ module.exports = (req, res, next) => {
     const token = authorization.replace('Bearer ', '');
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {
-    const error = new UnauthorizedError(errors.UNAUTHORIZED);
-    return res.status(error.statusCode).send({ message: error.message });
+    next(new UnauthorizedError(errors.UNAUTHORIZED));
   }
   req.user = payload;
   next();

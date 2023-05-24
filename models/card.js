@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const errors = require('../utils/constants');
 
 const { Schema } = mongoose;
 
@@ -12,10 +13,15 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (v) => errors.REGEXPHTTP.test(v),
+      message: 'Нужна ссылка',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
+    ref: 'user',
   },
   likes: {
     type: [{ type: Schema.Types.ObjectId, ref: 'user' }],
