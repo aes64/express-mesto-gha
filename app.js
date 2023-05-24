@@ -39,10 +39,6 @@ app.use(errors());
 app.use('/', require('./routes/notFound'));
 app.use('/', require('./utils/error/CentralError'));
 
-app.use((err, req, res) => {
-  res.status(err.statusCode).send({ message: err.message });
-});
-
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);
 });
