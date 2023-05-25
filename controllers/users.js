@@ -16,15 +16,18 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
-      if (!user) {
-        next(new NotFoundError(errors.NOT_FOUND));
+      if (user) {
+        res.send(user);
+      } else {
+        throw new NotFoundError(errors.NOT_FOUND);
       }
-      return res.send(user);
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
         next(new NotFoundError(errors.NOT_FOUND));
-      } return next(error);
+      } else {
+        next(error);
+      }
     });
 };
 
@@ -73,11 +76,11 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new AlreadyExistError(errors.ALREADY_EXIST));
-      }
-      if (err instanceof mongoose.Error.ValidationError) {
+      } else if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError(errors.BAD_REQUEST));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 

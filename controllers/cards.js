@@ -30,7 +30,7 @@ module.exports.deleteCard = async (req, res, next) => {
     const cardOwner = req.user._id;
     if (cardId === null) {
       next(new NotFoundError(errors.NOT_FOUND));
-    } if (cardId.owner.valueOf() === cardOwner) {
+    } else if (cardId.owner.valueOf() === cardOwner) {
       const card = await Card.findByIdAndRemove(req.params.cardId);
       res.send(card);
     } else {
