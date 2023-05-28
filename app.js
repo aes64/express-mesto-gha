@@ -5,12 +5,14 @@ const mongoose = require('mongoose');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const errorName = require('./utils/constants');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
+app.use(requestLogger);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/signin', celebrate({
@@ -35,6 +37,7 @@ app.use(auth);
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
+app.use(errorLogger);
 app.use(errors());
 app.use('/', require('./routes/notFound'));
 app.use('/', require('./utils/error/CentralError'));
